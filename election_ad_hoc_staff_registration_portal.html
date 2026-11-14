@@ -1,0 +1,1404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Election Ad-hoc Staff Registration Portal - Presiding Officer (PO)</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        civic: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            200: '#bbf7d0',
+                            300: '#86efac',
+                            400: '#4ade80',
+                            500: '#16a34a',
+                            600: '#15803d',
+                            700: '#166534',
+                            800: '#14532d',
+                            900: '#052e16',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Print Styles for Registration Acknowledgement Slip */
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            #slip-modal, #slip-modal * {
+                visibility: visible;
+            }
+            #slip-modal {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                background: white !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+            .no-print {
+                display: none !important;
+            }
+            #slip-content {
+                box-shadow: none !important;
+                border: 1px solid #d1d5db !important;
+                max-width: 100% !important;
+                width: 100% !important;
+            }
+        }
+
+        /* Custom subtle scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased min-h-screen flex flex-col">
+
+    <!-- Toast Notification Container (Replaces alert) -->
+    <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none px-4 sm:px-0"></div>
+
+    <!-- Official Portal Header -->
+    <header class="bg-gradient-to-r from-civic-800 via-civic-700 to-civic-800 text-white shadow-lg border-b-4 border-amber-400 sticky top-0 z-30 no-print">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <!-- Branding -->
+                <div class="flex items-center gap-3.5">
+                    <div class="w-12 h-12 rounded-xl bg-white/15 backdrop-blur-sm border border-white/25 flex items-center justify-center shrink-0 shadow-inner">
+                        <i class="fa-solid fa-box-ballot text-2xl text-amber-300"></i>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-amber-400 text-civic-900 rounded-full">Official Portal</span>
+                            <span class="text-xs text-civic-200 font-medium hidden sm:inline">Ad-hoc Personnel Recruitment</span>
+                        </div>
+                        <h1 class="text-lg sm:text-xl md:text-2xl font-bold tracking-tight leading-tight mt-0.5">
+                            Election Ad-hoc Staff Registration
+                        </h1>
+                        <p class="text-xs sm:text-sm text-civic-100 opacity-90">Presiding Officer (PO) &amp; Electoral Operations Application</p>
+                    </div>
+                </div>
+
+                <!-- Utility Toolbar for Hosting & Testing -->
+                <div class="flex flex-wrap items-center gap-2">
+                    <button type="button" id="btn-share-link" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold bg-white/10 hover:bg-white/20 text-white border border-white/20 transition cursor-pointer">
+                        <i class="fa-solid fa-share-nodes"></i>
+                        <span>Share Link</span>
+                    </button>
+                    <button type="button" id="btn-load-sample" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold bg-amber-400 hover:bg-amber-300 text-civic-950 shadow-sm transition cursor-pointer">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                        <span>Load Sample Data</span>
+                    </button>
+                    <button type="button" id="btn-clear-form" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold bg-civic-900/60 hover:bg-civic-900 text-civic-100 border border-civic-600 transition cursor-pointer">
+                        <i class="fa-solid fa-rotate-left"></i>
+                        <span>Clear Form</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Progress / Section Navigation Bar -->
+    <div class="bg-white border-b border-slate-200 shadow-sm no-print">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+            <div class="flex items-center justify-between overflow-x-auto gap-4 text-xs font-medium text-slate-500">
+                <a href="#sec-personal" class="flex items-center gap-2 text-civic-700 font-semibold whitespace-nowrap hover:text-civic-800">
+                    <span class="w-6 h-6 rounded-full bg-civic-100 text-civic-700 flex items-center justify-center font-bold">1</span>
+                    Personal &amp; Passport
+                </a>
+                <div class="h-px bg-slate-200 flex-1 min-w-[20px]"></div>
+                <a href="#sec-deployment" class="flex items-center gap-2 hover:text-civic-700 whitespace-nowrap transition">
+                    <span class="w-6 h-6 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center font-bold">2</span>
+                    Deployment
+                </a>
+                <div class="h-px bg-slate-200 flex-1 min-w-[20px]"></div>
+                <a href="#sec-residence" class="flex items-center gap-2 hover:text-civic-700 whitespace-nowrap transition">
+                    <span class="w-6 h-6 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center font-bold">3</span>
+                    Ward &amp; Residence
+                </a>
+                <div class="h-px bg-slate-200 flex-1 min-w-[20px]"></div>
+                <a href="#sec-bank" class="flex items-center gap-2 hover:text-civic-700 whitespace-nowrap transition">
+                    <span class="w-6 h-6 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center font-bold">4</span>
+                    ID &amp; Bank
+                </a>
+                <div class="h-px bg-slate-200 flex-1 min-w-[20px]"></div>
+                <a href="#sec-referee" class="flex items-center gap-2 hover:text-civic-700 whitespace-nowrap transition">
+                    <span class="w-6 h-6 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center font-bold">5</span>
+                    Referee &amp; Submit
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Form Content -->
+    <main class="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 no-print">
+        
+        <!-- Info Banner -->
+        <div class="mb-6 bg-civic-50 border border-civic-200 rounded-xl p-4 flex items-start gap-3">
+            <i class="fa-solid fa-circle-info text-civic-600 mt-0.5 text-lg"></i>
+            <div class="text-sm text-civic-900">
+                <p class="font-semibold">Application Instructions</p>
+                <p class="text-civic-700 mt-0.5 text-xs sm:text-sm">
+                    Please fill out all required fields accurately as they appear on your official credentials and bank account. Upload a clear recent <strong>Passport Photograph (JPEG/JPG format only, max 2MB)</strong> before submitting.
+                </p>
+            </div>
+        </div>
+
+        <form id="registration-form" novalidate class="space-y-6">
+
+            <!-- SECTION 1: APPLICATION, PERSONAL DETAILS & PASSPORT PHOTOGRAPH -->
+            <section id="sec-personal" class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="bg-slate-50/80 px-6 py-4 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-8 h-8 rounded-lg bg-civic-600 text-white flex items-center justify-center font-bold text-sm">1</div>
+                        <div>
+                            <h2 class="text-base sm:text-lg font-bold text-slate-800">Application &amp; Personal Details</h2>
+                            <p class="text-xs text-slate-500">Applicant identification, contact info, and passport photograph</p>
+                        </div>
+                    </div>
+                    <span class="text-xs font-medium text-rose-600 bg-rose-50 px-2.5 py-1 rounded-md border border-rose-100">* Required Fields</span>
+                </div>
+
+                <div class="p-6">
+                    <!-- Top Grid: Passport Upload Box + Primary Identifiers -->
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                        
+                        <!-- Left/Main Fields (8 cols on lg) -->
+                        <div class="lg:col-span-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <!-- Applicant No -->
+                            <div class="sm:col-span-2">
+                                <label for="applicantNo" class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">
+                                    Applicant No <span class="text-rose-500">*</span>
+                                </label>
+                                <div class="flex rounded-xl shadow-sm">
+                                    <input type="text" id="applicantNo" name="applicantNo" required placeholder="e.g. ABI_95517169634"
+                                        class="flex-1 block w-full rounded-l-xl border border-slate-300 bg-slate-50 px-3.5 py-2.5 text-sm font-mono font-semibold text-civic-800 focus:border-civic-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-civic-500/20">
+                                    <button type="button" id="btn-gen-id" title="Generate New Applicant ID"
+                                        class="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-r-xl border border-l-0 border-slate-300 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition cursor-pointer">
+                                        <i class="fa-solid fa-arrows-rotate"></i>
+                                        <span class="hidden sm:inline">Auto-Generate</span>
+                                    </button>
+                                </div>
+                                <p class="error-msg text-xs text-rose-600 mt-1 hidden"></p>
+                            </div>
+
+                            <!-- Surname -->
+                            <div>
+                                <label for="surname" class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">
+                                    Surname <span class="text-rose-500">*</span>
+                                </label>
+                                <input type="text" id="surname" name="surname" required placeholder="e.g. ORIEKE"
+                                    class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm uppercase focus:border-civic-500 focus:outline-none focus:ring-2 focus:ring-civic-500/20">
+                                <p class="error-msg text-xs text-rose-600 mt-1 hidden"></p>
+                            </div>
+
+                            <!-- First Name -->
+                            <div>
+                                <label for="firstName" class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">
+                                    First Name <span class="text-rose-500">*</span>
+                                </label>
+                                <input type="text" id="firstName" name="firstName" required placeholder="e.g. JOSEPH"
+                                    class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm uppercase focus:border-civic-500 focus:outline-none focus:ring-2 focus:ring-civic-500/20">
+                                <p class="error-msg text-xs text-rose-600 mt-1 hidden"></p>
+                            </div>
+
+                            <!-- Other Names -->
+                            <div>
+                                <label for="otherNames" class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">
+                                    Other Names
+                                </label>
+                                <input type="text" id="otherNames" name="otherNames" placeholder="e.g. KALU"
+                                    class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm uppercase focus:border-civic-500 focus:outline-none focus:ring-2 focus:ring-civic-500/20">
+                            </div>
+
+                            <!-- Callup No / Student ID No -->
+                            <div>
+                                <label for="callupNo" class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">
+                                    Call-up No / Student ID No <span class="text-rose-500">*</span>
+                                </label>
+                                <input type="text" id="callupNo" name="callupNo" required placeholder="e.g. SS/2557"
+                                    class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm uppercase focus:border-civic-500 focus:outline-none focus:ring-2 focus:ring-civic-500/20">
+                                <p class="error-msg text-xs text-rose-600 mt-1 hidden"></p>
+                            </div>
+                        </div>
+
+                        <!-- Right Column: Passport Photograph Upload Box (4 cols on lg) -->
+                        <div class="lg:col-span-4 flex flex-col items-center justify-center bg-slate-50 border-2 border-dashed border-slate-300 rounded-2xl p-4 transition hover:border-civic-500" id="passport-dropzone">
+                            <div class="text-center mb-2">
+                                <span class="text-xs font-bold uppercase tracking-wider text-slate-700">Passport Photograph <span class="text-rose-500">*</span></span>
+                                <p class="text-[11px] text-slate-500">JPEG / JPG Format Only (Max 2MB)</p>
+                            </div>
+
+                            <!-- Preview Frame (Standard 3.5cm x 4.5cm Passport Aspect Ratio) -->
+                            <div class="relative w-36 h-44 rounded-xl bg-white border-2 border-slate-200 shadow-sm overflow-hidden flex items-center justify-center group">
+                                <img id="passport-preview" src="" alt="Passport Preview" class="w-full h-full object-cover hidden">
+                                
+                                <!-- Placeholder State -->
+                                <div id="passport-placeholder" class="flex flex-col items-center justify-center text-slate-400 p-3 text-center">
+                                    <i class="fa-solid fa-user-tie text-4xl mb-2 text-slate-300"></i>
+                                    <span class="text-[11px] font-medium leading-tight">Click below to upload JPEG</span>
+                                </div>
+
+                                <!-- Hover overlay when photo exists -->
+                                <div id="passport-overlay" class="absolute inset-0 bg-slate-900/60 opacity-0 group-hover:opacity-100 transition-opacity hidden flex-col items-center justify-center gap-2 p-2">
+                                    <button type="button" id="btn-change-photo" class="px-2.5 py-1.5 bg-white text-slate-800 rounded-lg text-xs font-semibold hover:bg-slate-100 cursor-pointer">
+                                        <i class="fa-solid fa-camera mr-1"></i> Change
+                                    </button>
+                                    <button type="button" id="btn-remove-photo" class="px-2.5 py-1.5 bg-rose-600 text-white rounded-lg text-xs font-semibold hover:bg-rose-700 cursor-pointer">
+                                        <i class="fa-solid fa-trash-can mr-1"></i> Remove
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Hidden File Input restricted to JPEG -->
+                            <input type="file" id="passportInput" accept=".jpg,.jpeg,image/jpeg" class="hidden">
+
+                            <!-- Upload Action Button -->
+                            <div class="mt-3 flex items-center gap-2">
+                                <button type="button" id="btn-upload-passport" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-civic-600 hover:bg-civic-700 text-white text-xs font-semibold shadow-sm transition cursor-pointer">
+                                    <i class="fa-solid fa-upload"></i>
+                                    <span id="upload-btn-text">Select Passport JPEG</span>
+                                </button>
+                            </div>
+                            <p id="passport-file-info" class="text-[11px] text-slate-500 mt-1.5 truncate max-w-[200px]">No file selected</p>
+                            <p id="passport-error" class="text-xs text-rose-600 font-medium mt-1 hidden text-center"></p>
+                        </div>
+                    </div>
+
+                    <!-- Bottom Row of Section 1: Demographics & Contact -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mt-6 pt-6 border-t border-slate-100">
+                        <!-- Gender -->
+                        <div>
+                            <label for="gender" class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">
+                                Gender <span class="text-rose-500">*</span>
+                            </label>
+                            <select id="gender" name="gender" required
+                                class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm focus:border-civic-500 focus:outline-none focus:ring-2 focus:ring-civic-500/20">
+                                <option value="">Select Gender</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                            </select>
+                            <p class="error-msg text-xs text-rose-600 mt-1 hidden"></p>
+                        </div>
+
+                        <!-- Marital Status -->
+                        <div>
+                            <label for="maritalStatus" class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">
+                                Marital Status <span class="text-rose-500">*</span>
+                            </label>
+                            <select id="maritalStatus" name="maritalStatus" required
+                                class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm focus:border-civic-500 focus:outline-none focus:ring-2 focus:ring-civic-500/20">
+                                <option value="">Select Status</option>
+                                <option value="Single">Single</option>
+                                <option value="Married">Married</option>
+                                <option value="Divorced">Divorced</option>
+                                <option value="Widowed">Widowed</option>
+                            </select>
+                            <p class="error-msg text-xs text-rose-600 mt-1 hidden"></p>
+                        </div>
+
+                        <!-- Email Address -->
+                        <div class="sm:col-span-2 lg:col-span-1">
+                            <label for="email" class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">
+                                Email Address <span class="text-rose-500">*</span>
+                            </label>
+                            <input type="email" id="email" name="email" required placeholder="name@example.com"
+                                class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:border-civic-500 focus:outline-none focus:ring-2 focus:ring-civic-500/20">
+                            <p class="error-msg text-xs text-rose-600 mt-1 hidden"></p>
+                        </div>
+
+                        <!-- Mobile Phone Number -->
+                        <div>
+                            <label for="mobilePhone" class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">
+                                Mobile Phone No <span class="text-rose-500">*</span>
+                            </label>
+                            <input type="tel" id="mobilePhone" name="mobilePhone" required placeholder="e.g. 08036826930"
+                                class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:border-civic-500 focus:outline-none focus:ring-2 focus:ring-civic-500/20">
+                            <p class="error-msg text-xs text-rose-600 mt-1 hidden"></p>
+                        </div>
+
+                        <!-- Preferred Contact Number -->
+                        <div>
+                            <label for="preferredPhone" class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">
+                                Preferred Contact No <span class="text-rose-500">*</span>
+                            </label>
+                            <input type="tel" id="preferredPhone" name="preferredPhone" required placeholder="e.g. 08036826930"
+                                class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:border-civic-500 focus:outline-none focus:ring-2 focus:ring-civic-500/20">
+                            <p class="error-msg text-xs text-rose-600 mt-1 hidden"></p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION 2: ORGANIZATION & DEPLOYMENT DETAILS -->
+            <section id="sec-deployment" class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="bg-slate-50/80 px-6 py-4 border-b border-slate-200 flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-lg bg-civic-600 text-white flex items-center justify-center font-bold text-sm">2</div>
+                    <div>
+                        <h2 class="text-base sm:text-lg font-bold text-slate-800">Organization &amp; Deployment Details</h2>
+                        <p class="text-xs text-slate-500">Institutional affiliation, applied role, and deployment preferences</p>
+                    </div>
+                </div>
+
+                <div class="p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Workplace / Organization -->
+                    <div>
+                        <label for="workplace" class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">
+                            Workplace / Organization <span class="text-rose-500">*</span>
+                        </label>
+                        <select id="workplace" name="workplace" required
+                            class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm focus:border-civic-500 focus:outline-none focus:ring-2 focus:ring-civic-500/20">
+                            <option value="">Select Organization</option>
+                            <option value="NYSC">NYSC (Serving Corps Member)</option>
+                            <option value="Federal Ministry / Agency">Federal Ministry / Agency</option>
+                            <option value="State Ministry / Agency">State Ministry / Agency</option>
+                            <option value="Federal Tertiary Institution">Federal Tertiary Institution</option>
+                            <option value="State Tertiary Institution">State Tertiary Institution</option>
+                            <option value="Ex-Corps Member">Ex-Corps Member</option>
+                            <option value="Student">Tertiary Institution Student</option>
+                            <option value="Other">Other</option>
+                        </select>
+                        <p class="error-msg text-xs text-rose-600 mt-1 hidden"></p>
+                    </div>
+
+                    <!-- Workplace / Organization Other Source -->
+                    <div>
+                        <label for="workplaceOther" class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">
+                            Workplace / Org. Other Source
+                        </label>
+                        <input type="text" id="workplaceOther" name="workplaceOther" placeholder="e.g. NYSC or Specify if Other"
+                            class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:border-civic-500 focus:outline-none focus:ring-2 focus:ring-civic-500/20">
+                    </div>
+
+                    <!-- Position Applied For -->
+                    <div>
+                        <label for="position" class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">
+                            Position Applied For <span class="text-rose-500">*</span>
+                        </label>
+                        <select id="position" name="position" required
+                            class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm font-medium text-civic-900 focus:border-civic-500 focus:outline-none focus:ring-2 focus:ring-civic-500/20">
+                            <option value="Presiding Officer (PO)">Presiding Officer (PO)</option>
+                            <option value="Assistant Presiding Officer (APO I)">Assistant Presiding Officer (APO I)</option>
+                            <option value="Assistant Presiding Officer (APO II)">Assistant Presiding Officer (APO II)</option>
+                            <option value="Assistant Presiding Officer (APO III)">Assistant Presiding Officer (APO III)</option>
+                            <option value="Supervisory Presiding Officer (SPO)">Supervisory Presiding Officer (SPO)</option>
+                            <option value="Registration Area Center (RAC) Manager">Registration Area Center (RAC) Manager</option>
+                        </select>
+                        <p class="error-msg text-xs text-rose-600 mt-1 hidden"></p>
+                    </div>
+
+                    <!-- Designation -->
+                    <div>
+                        <label for="designation" class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">
+                            Designation <span class="text-rose-500">*</span>
+                        </label>
+                        <input type="text" id="designation" name="designation" required placeholder="e.g. NYSC / Lecturer / Civil Servant"
+                            class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:border-civic-500 focus:outline-none focus:ring-2 focus:ring-civic-500/20">
+                        <p class="error-msg text-xs text-rose-600 mt-1 hidden"></p>
+                    </div>
+
+                    <!-- State of Deployment -->
+                    <div>
+                        <label for="stateOfDeployment" class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">
+                            State of Deployment <span class="text-rose-500">*</span>
+                        </label>
+                        <select id="stateOfDeployment" name="stateOfDeployment" required class="state-select w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm focus:border-civic-500 focus:outline-none focus:ring-2 focus:ring-civic-500/20">
+                            <option value="">Select State</option>
+                        </select>
+                        <p class="error-msg text-xs text-rose-600 mt-1 hidden"></p>
+                    </div>
+
+                    <!-- Preferred Election State -->
+                    <div>
+                        <label for="preferredElectionState" class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">
+                            Preferred Election State <span class="text-rose-500">*</span>
+                        </label>
+                        <select id="preferredElectionState" name="preferredElectionState" required class="state-select w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm focus:border-civic-500 focus:outline-none focus:ring-2 focus:ring-civic-500/20">
+                            <option value="">Select Preferred State</option>
+                        </select>
+                        <p class="error-msg text-xs text-rose-600 mt-1 hidden"></p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION 3: RESIDENTIAL & WARD INFORMATION -->
+            <section id="sec-residence" class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="bg-slate-50/80 px-6 py-4 border-b border-slate-200 flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-lg bg-civic-600 text-white flex items-center justify-center font-bold text-sm">3</div>
+                    <div>
+                        <h2 class="text-base sm:text-lg font-bold text-slate-800">Residential &amp; Ward Information</h2>
+                        <p class="text-xs text-slate-500">Current residence, registration area (ward), and permanent address</p>
+                    </div>
+                </div>
+
+                <div class="p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- State of Residence -->
+                    <div>
+                        <label for="stateOfResidence" class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">
+                            State of Residence <span class="text-rose-500">*</span>
+                        </label>
+                        <select id="stateOfResidence" name="stateOfResidence" required class="state-select w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm focus:border-civic-500 focus:outline-none focus:ring-2 focus:ring-civic-500/20">
+                            <option value="">Select State of Residence</option>
+                        </select>
+                        <p class="error-msg text-xs text-rose-600 mt-1 hidden"></p>
+                    </div>
+
+                    <!-- LGA of Residence -->
+                    <div>
+                        <label for="lgaOfResidence" class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">
+                            LGA of Residence <span class="text-rose-500">*</span>
+                        </label>
+                        <input type="text" id="lgaOfResidence" name="lgaOfResidence" required placeholder="e.g. UMUAHIA SOUTH"
+                            class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm uppercase focus:border-civic-500 focus:outline-none focus:ring-2 focus:ring-civic-500/20">
+                        <p class="error-msg text-xs text-rose-600 mt-1 hidden"></p>
+                    </div>
+
+                    <!-- Ward -->
+                    <div>
+                        <label for="ward" class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">
+                            Registration Area / Ward <span class="text-rose-500">*</span>
+                        </label>
+                        <input type="text" id="ward" name="ward" required placeholder="e.g. UBAKALA 'A'"
+                            class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm uppercase focus:border-civic-500 focus:outline-none focus:ring-2 focus:ring-civic-500/20">
+                        <p class="error-msg text-xs text-rose-600 mt-1 hidden"></p>
+                    </div>
+
+                    <!-- Nearest Landmark -->
+                    <div class="sm:col-span-2">
+                        <label for="nearestLandmark" class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">
+                            Nearest Landmark <span class="text-rose-500">*</span>
+                        </label>
+                        <input type="text" id="nearestLandmark" name="nearestLandmark" required placeholder="e.g. IPUPE I-OGBO CENTRAL SCHOOL"
+                            class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm uppercase focus:border-civic-500 focus:outline-none focus:ring-2 focus:ring-civic-500/20">
+                        <p class="error-msg text-xs text-rose-600 mt-1 hidden"></p>
+                    </div>
+
+                    <!-- Hosting Institution (RAC Manager ONLY) -->
+                    <div>
+                        <label for="hostingInstitution" class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">
+                            Hosting Institution <span class="text-[10px] text-slate-400 font-normal">(RAC Manager ONLY)</span>
+                        </label>
+                        <input type="text" id="hostingInstitution" name="hostingInstitution" value="NONE" placeholder="NONE"
+                            class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm uppercase focus:border-civic-500 focus:outline-none focus:ring-2 focus:ring-civic-500/20">
+                    </div>
+
+                    <!-- Address of Residence -->
+                    <div class="sm:col-span-3 lg:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                        <div>
+                            <label for="addressOfResidence" class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">
+                                Address of Residence <span class="text-rose-500">*</span>
+                            </label>
+                            <textarea id="addressOfResidence" name="addressOfResidence" rows="2" required placeholder="Enter full current residential address"
+                                class="w-full rounded-xl border border-slate-300 px-3.5 py-2 text-sm focus:border-civic-500 focus:outline-none focus:ring-2 focus:ring-civic-500/20"></textarea>
+                            <p class="error-msg text-xs text-rose-600 mt-1 hidden"></p>
+                        </div>
+
+                        <!-- Permanent Home Address -->
+                        <div>
+                            <label for="permanentAddress" class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">
+                                Permanent Home Address <span class="text-rose-500">*</span>
+                            </label>
+                            <textarea id="permanentAddress" name="permanentAddress" rows="2" required placeholder="Enter permanent home town/city address"
+                                class="w-full rounded-xl border border-slate-300 px-3.5 py-2 text-sm focus:border-civic-500 focus:outline-none focus:ring-2 focus:ring-civic-500/20"></textarea>
+                            <p class="error-msg text-xs text-rose-600 mt-1 hidden"></p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION 4: QUALIFICATIONS, IDENTIFICATION & BANK DETAILS -->
+            <section id="sec-bank" class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="bg-slate-50/80 px-6 py-4 border-b border-slate-200 flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-lg bg-civic-600 text-white flex items-center justify-center font-bold text-sm">4</div>
+                    <div>
+                        <h2 class="text-base sm:text-lg font-bold text-slate-800">Qualifications, Identification &amp; Bank Details</h2>
+                        <p class="text-xs text-slate-500">Academic credential, valid ID, and NUBAN account details for allowance disbursement</p>
+                    </div>
+                </div>
+
+                <div class="p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Highest Qualification -->
+                    <div>
+                        <label for="qualification" class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">
+                            Highest Qualification <span class="text-rose-500">*</span>
+                        </label>
+                        <select id="qualification" name="qualification" required
+                            class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm focus:border-civic-500 focus:outline-none focus:ring-2 focus:ring-civic-500/20">
+                            <option value="">Select Qualification</option>
+                            <option value="National Diploma (HND, ND)">National Diploma (HND, ND)</option>
+                            <option value="Bachelor's Degree (B.Sc, B.A, B.Ed, B.Eng)">Bachelor's Degree (B.Sc, B.A, B.Ed, B.Eng)</option>
+                            <option value="Postgraduate Diploma (PGD)">Postgraduate Diploma (PGD)</option>
+                            <option value="Master's Degree (M.Sc, M.A, MBA)">Master's Degree (M.Sc, M.A, MBA)</option>
+                            <option value="Doctorate (Ph.D)">Doctorate (Ph.D)</option>
+                            <option value="NCE">Nigeria Certificate in Education (NCE)</option>
+                            <option value="SSCE / OND">SSCE / Undergraduate</option>
+                        </select>
+                        <p class="error-msg text-xs text-rose-600 mt-1 hidden"></p>
+                    </div>
+
+                    <!-- Form of Identification -->
+                    <div>
+                        <label for="idForm" class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">
+                            Form of Identification <span class="text-rose-500">*</span>
+                        </label>
+                        <select id="idForm" name="idForm" required
+                            class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm focus:border-civic-500 focus:outline-none focus:ring-2 focus:ring-civic-500/20">
+                            <option value="">Select ID Type</option>
+                            <option value="National ID Card">National ID Card (NIN Slip / Card)</option>
+                            <option value="Permanent Voter's Card (PVC)">Permanent Voter's Card (PVC)</option>
+                            <option value="Driver's License">Driver's License</option>
+                            <option value="International Passport">International Passport</option>
+                            <option value="NYSC ID Card">NYSC ID Card</option>
+                        </select>
+                        <p class="error-msg text-xs text-rose-600 mt-1 hidden"></p>
+                    </div>
+
+                    <!-- Bank Name -->
+                    <div>
+                        <label for="bankName" class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">
+                            Bank Name <span class="text-rose-500">*</span>
+                        </label>
+                        <select id="bankName" name="bankName" required
+                            class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm focus:border-civic-500 focus:outline-none focus:ring-2 focus:ring-civic-500/20">
+                            <option value="">Select Commercial Bank</option>
+                            <option value="Access Bank">Access Bank</option>
+                            <option value="Citibank Nigeria">Citibank Nigeria</option>
+                            <option value="Ecobank Nigeria">Ecobank Nigeria</option>
+                            <option value="Fidelity Bank">Fidelity Bank</option>
+                            <option value="First Bank of Nigeria">First Bank of Nigeria</option>
+                            <option value="First City Monument Bank (FCMB)">First City Monument Bank (FCMB)</option>
+                            <option value="Globus Bank">Globus Bank</option>
+                            <option value="Guaranty Trust Bank (GTBank)">Guaranty Trust Bank (GTBank)</option>
+                            <option value="Keystone Bank">Keystone Bank</option>
+                            <option value="Polaris Bank">Polaris Bank</option>
+                            <option value="Providus Bank">Providus Bank</option>
+                            <option value="Stanbic IBTC Bank">Stanbic IBTC Bank</option>
+                            <option value="Standard Chartered Bank">Standard Chartered Bank</option>
+                            <option value="Sterling Bank">Sterling Bank</option>
+                            <option value="SunTrust Bank">SunTrust Bank</option>
+                            <option value="Union Bank of Nigeria">Union Bank of Nigeria</option>
+                            <option value="United Bank for Africa (UBA)">United Bank for Africa (UBA)</option>
+                            <option value="Unity Bank">Unity Bank</option>
+                            <option value="Wema Bank">Wema Bank</option>
+                            <option value="Zenith Bank">Zenith Bank</option>
+                        </select>
+                        <p class="error-msg text-xs text-rose-600 mt-1 hidden"></p>
+                    </div>
+
+                    <!-- Account Number (10-digit NUBAN) -->
+                    <div>
+                        <label for="accountNumber" class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">
+                            Account Number (10 Digits) <span class="text-rose-500">*</span>
+                        </label>
+                        <input type="text" id="accountNumber" name="accountNumber" maxlength="10" inputmode="numeric" required placeholder="e.g. 1006525162"
+                            class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm font-mono tracking-wider focus:border-civic-500 focus:outline-none focus:ring-2 focus:ring-civic-500/20">
+                        <p class="error-msg text-xs text-rose-600 mt-1 hidden"></p>
+                    </div>
+
+                    <!-- Account Name -->
+                    <div class="sm:col-span-2">
+                        <label for="accountName" class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">
+                            Account Name <span class="text-rose-500">*</span>
+                        </label>
+                        <input type="text" id="accountName" name="accountName" required placeholder="Must match applicant's full name (e.g. ORIEKE JOSEPH KALU)"
+                            class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm uppercase focus:border-civic-500 focus:outline-none focus:ring-2 focus:ring-civic-500/20">
+                        <p class="error-msg text-xs text-rose-600 mt-1 hidden"></p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION 5: REFEREE INFORMATION & METADATA -->
+            <section id="sec-referee" class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="bg-slate-50/80 px-6 py-4 border-b border-slate-200 flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-lg bg-civic-600 text-white flex items-center justify-center font-bold text-sm">5</div>
+                    <div>
+                        <h2 class="text-base sm:text-lg font-bold text-slate-800">Referee Information &amp; Submission Metadata</h2>
+                        <p class="text-xs text-slate-500">Credible guarantor/referee contact and system registration timestamp</p>
+                    </div>
+                </div>
+
+                <div class="p-6">
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <!-- Referee Full Name -->
+                        <div>
+                            <label for="refereeName" class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">
+                                Referee Full Name <span class="text-rose-500">*</span>
+                            </label>
+                            <input type="text" id="refereeName" name="refereeName" required placeholder="e.g. CHIKE ONWUBIKO"
+                                class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm uppercase focus:border-civic-500 focus:outline-none focus:ring-2 focus:ring-civic-500/20">
+                            <p class="error-msg text-xs text-rose-600 mt-1 hidden"></p>
+                        </div>
+
+                        <!-- Referee Mobile Phone -->
+                        <div>
+                            <label for="refereePhone" class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">
+                                Referee Mobile Phone <span class="text-rose-500">*</span>
+                            </label>
+                            <input type="tel" id="refereePhone" name="refereePhone" required placeholder="e.g. 08061365320"
+                                class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:border-civic-500 focus:outline-none focus:ring-2 focus:ring-civic-500/20">
+                            <p class="error-msg text-xs text-rose-600 mt-1 hidden"></p>
+                        </div>
+
+                        <!-- Referee Email Address -->
+                        <div>
+                            <label for="refereeEmail" class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">
+                                Referee Email Address <span class="text-rose-500">*</span>
+                            </label>
+                            <input type="email" id="refereeEmail" name="refereeEmail" required placeholder="e.g. onwubikodaniel@gmail.com"
+                                class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:border-civic-500 focus:outline-none focus:ring-2 focus:ring-civic-500/20">
+                            <p class="error-msg text-xs text-rose-600 mt-1 hidden"></p>
+                        </div>
+                    </div>
+
+                    <!-- Auto-populated Metadata Bar -->
+                    <div class="mt-6 pt-5 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-50/70 p-4 rounded-xl border border-slate-200/70">
+                        <div>
+                            <label for="regSource" class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">
+                                Registration Source (System Read-Only)
+                            </label>
+                            <div class="flex items-center gap-2 text-sm font-semibold text-slate-700">
+                                <i class="fa-solid fa-globe text-civic-600"></i>
+                                <input type="text" id="regSource" name="regSource" value="From Web" readonly
+                                    class="bg-transparent font-semibold text-slate-700 focus:outline-none w-full">
+                            </div>
+                        </div>
+                        <div>
+                            <label for="regDate" class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">
+                                Registration Date &amp; Time (Auto-Filled)
+                            </label>
+                            <div class="flex items-center gap-2 text-sm font-semibold text-slate-700">
+                                <i class="fa-regular fa-clock text-civic-600"></i>
+                                <input type="text" id="regDate" name="regDate" readonly
+                                    class="bg-transparent font-mono font-semibold text-slate-700 focus:outline-none w-full">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Attestation Checkbox -->
+                    <div class="mt-5 flex items-start gap-3">
+                        <input type="checkbox" id="attestation" required class="mt-1 h-4 w-4 rounded border-slate-300 text-civic-600 focus:ring-civic-500 cursor-pointer">
+                        <label for="attestation" class="text-xs sm:text-sm text-slate-600 cursor-pointer select-none">
+                            I hereby certify that all information provided in this application is true, complete, and accurate. I understand that any false declaration or invalid bank/passport detail may lead to immediate disqualification.
+                        </label>
+                    </div>
+                    <p id="attestation-error" class="text-xs text-rose-600 mt-1 hidden"></p>
+                </div>
+
+                <!-- Submit Footer -->
+                <div class="bg-slate-50 px-6 py-4 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <p class="text-xs text-slate-500 text-center sm:text-left">
+                        <i class="fa-solid fa-shield-halved text-civic-600 mr-1"></i>
+                        Generates an official printable Registration Acknowledgement Slip upon submission.
+                    </p>
+                    <button type="submit" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl bg-civic-600 hover:bg-civic-700 active:bg-civic-800 text-white font-bold text-sm shadow-md shadow-civic-600/20 transition cursor-pointer">
+                        <i class="fa-solid fa-paper-plane"></i>
+                        <span>Submit &amp; Generate Slip</span>
+                    </button>
+                </div>
+            </section>
+        </form>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 py-5 mt-auto no-print">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-500">
+            <p>&copy; 2026 Election Ad-hoc Staff Registration Portal. All rights reserved.</p>
+            <p class="flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-civic-500 inline-block"></span>
+                Portal Status: <span class="font-semibold text-slate-700">Active &amp; Ready for Hosting</span>
+            </p>
+        </div>
+    </footer>
+
+    <!-- REGISTRATION ACKNOWLEDGEMENT SLIP MODAL -->
+    <div id="slip-modal" class="fixed inset-0 z-50 bg-slate-900/75 backdrop-blur-sm hidden overflow-y-auto p-3 sm:p-6">
+        <div class="min-h-full flex items-center justify-center">
+            <div id="slip-content" class="bg-white w-full max-w-4xl rounded-2xl shadow-2xl border border-slate-200 overflow-hidden my-4">
+                
+                <!-- Modal Top Action Bar (Hidden when printing) -->
+                <div class="bg-slate-800 text-white px-5 py-3 flex flex-wrap items-center justify-between gap-3 no-print">
+                    <div class="flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                        <span class="text-xs sm:text-sm font-semibold">Application Submitted Successfully</span>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <button type="button" id="btn-copy-summary" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-xs font-semibold transition cursor-pointer">
+                            <i class="fa-regular fa-copy"></i> Copy Details
+                        </button>
+                        <button type="button" id="btn-print-slip" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-civic-500 hover:bg-civic-400 text-white text-xs font-bold shadow transition cursor-pointer">
+                            <i class="fa-solid fa-print"></i> Print / Save as PDF
+                        </button>
+                        <button type="button" id="btn-close-modal" class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-slate-700 hover:bg-rose-600 text-white transition cursor-pointer" title="Close">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Printable Acknowledgement Slip Body -->
+                <div class="p-6 sm:p-8 bg-white">
+                    <!-- Official Slip Header -->
+                    <div class="border-b-2 border-civic-700 pb-5 mb-6 flex flex-col sm:flex-row items-center sm:items-start justify-between gap-4">
+                        <div class="flex items-center gap-4 text-center sm:text-left">
+                            <div class="w-14 h-14 rounded-xl bg-civic-700 text-white flex items-center justify-center shrink-0">
+                                <i class="fa-solid fa-box-ballot text-2xl text-amber-300"></i>
+                            </div>
+                            <div>
+                                <p class="text-[11px] font-bold uppercase tracking-widest text-civic-700">Electoral Operations &amp; Ad-hoc Personnel</p>
+                                <h2 class="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">REGISTRATION ACKNOWLEDGEMENT SLIP</h2>
+                                <p class="text-xs text-slate-500 mt-0.5">Presiding Officer (PO) / Ad-hoc Staff Recruitment Portal</p>
+                            </div>
+                        </div>
+
+                        <!-- Passport Photo on Slip -->
+                        <div class="shrink-0 flex flex-col items-center">
+                            <div class="w-28 h-32 rounded-lg border-2 border-civic-700 overflow-hidden bg-slate-100 shadow-sm">
+                                <img id="slip-passport-img" src="" alt="Applicant Passport" class="w-full h-full object-cover">
+                            </div>
+                            <span class="text-[10px] font-mono font-bold text-slate-600 mt-1" id="slip-applicant-no-badge">ABI_00000000000</span>
+                        </div>
+                    </div>
+
+                    <!-- Highlight Bar: Applicant No & Position -->
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-civic-50 border border-civic-200 rounded-xl p-4 mb-6">
+                        <div>
+                            <span class="text-[10px] font-bold uppercase tracking-wider text-civic-700 block">Applicant Number</span>
+                            <span id="slip-applicantNo" class="text-base font-mono font-extrabold text-slate-900"></span>
+                        </div>
+                        <div>
+                            <span class="text-[10px] font-bold uppercase tracking-wider text-civic-700 block">Position Applied For</span>
+                            <span id="slip-position" class="text-sm font-bold text-civic-900"></span>
+                        </div>
+                        <div>
+                            <span class="text-[10px] font-bold uppercase tracking-wider text-civic-700 block">Call-up / Student ID</span>
+                            <span id="slip-callupNo" class="text-sm font-mono font-bold text-slate-900"></span>
+                        </div>
+                    </div>
+
+                    <!-- Structured Data Grid -->
+                    <div class="space-y-5 text-xs sm:text-sm">
+                        
+                        <!-- Group A: Personal Details -->
+                        <div>
+                            <h3 class="text-xs font-bold uppercase tracking-wider text-civic-800 bg-slate-100 px-3 py-1.5 rounded-md mb-3">A. Personal &amp; Contact Information</h3>
+                            <div class="grid grid-cols-2 sm:grid-cols-3 gap-y-3 gap-x-4 px-2">
+                                <div>
+                                    <span class="text-[11px] text-slate-500 block">Surname</span>
+                                    <span id="slip-surname" class="font-semibold text-slate-900"></span>
+                                </div>
+                                <div>
+                                    <span class="text-[11px] text-slate-500 block">First Name</span>
+                                    <span id="slip-firstName" class="font-semibold text-slate-900"></span>
+                                </div>
+                                <div>
+                                    <span class="text-[11px] text-slate-500 block">Other Names</span>
+                                    <span id="slip-otherNames" class="font-semibold text-slate-900"></span>
+                                </div>
+                                <div>
+                                    <span class="text-[11px] text-slate-500 block">Gender</span>
+                                    <span id="slip-gender" class="font-semibold text-slate-900"></span>
+                                </div>
+                                <div>
+                                    <span class="text-[11px] text-slate-500 block">Marital Status</span>
+                                    <span id="slip-maritalStatus" class="font-semibold text-slate-900"></span>
+                                </div>
+                                <div>
+                                    <span class="text-[11px] text-slate-500 block">Email Address</span>
+                                    <span id="slip-email" class="font-semibold text-slate-900 break-all"></span>
+                                </div>
+                                <div>
+                                    <span class="text-[11px] text-slate-500 block">Mobile Phone Number</span>
+                                    <span id="slip-mobilePhone" class="font-semibold text-slate-900"></span>
+                                </div>
+                                <div>
+                                    <span class="text-[11px] text-slate-500 block">Preferred Contact Number</span>
+                                    <span id="slip-preferredPhone" class="font-semibold text-slate-900"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Group B: Deployment & Organization -->
+                        <div>
+                            <h3 class="text-xs font-bold uppercase tracking-wider text-civic-800 bg-slate-100 px-3 py-1.5 rounded-md mb-3">B. Organization &amp; Deployment Details</h3>
+                            <div class="grid grid-cols-2 sm:grid-cols-3 gap-y-3 gap-x-4 px-2">
+                                <div>
+                                    <span class="text-[11px] text-slate-500 block">Workplace / Organization</span>
+                                    <span id="slip-workplace" class="font-semibold text-slate-900"></span>
+                                </div>
+                                <div>
+                                    <span class="text-[11px] text-slate-500 block">Other Source</span>
+                                    <span id="slip-workplaceOther" class="font-semibold text-slate-900"></span>
+                                </div>
+                                <div>
+                                    <span class="text-[11px] text-slate-500 block">Designation</span>
+                                    <span id="slip-designation" class="font-semibold text-slate-900"></span>
+                                </div>
+                                <div>
+                                    <span class="text-[11px] text-slate-500 block">State of Deployment</span>
+                                    <span id="slip-stateOfDeployment" class="font-semibold text-slate-900"></span>
+                                </div>
+                                <div>
+                                    <span class="text-[11px] text-slate-500 block">Preferred Election State</span>
+                                    <span id="slip-preferredElectionState" class="font-semibold text-slate-900"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Group C: Ward & Residential Details -->
+                        <div>
+                            <h3 class="text-xs font-bold uppercase tracking-wider text-civic-800 bg-slate-100 px-3 py-1.5 rounded-md mb-3">C. Residential &amp; Ward Information</h3>
+                            <div class="grid grid-cols-2 sm:grid-cols-3 gap-y-3 gap-x-4 px-2">
+                                <div>
+                                    <span class="text-[11px] text-slate-500 block">State of Residence</span>
+                                    <span id="slip-stateOfResidence" class="font-semibold text-slate-900"></span>
+                                </div>
+                                <div>
+                                    <span class="text-[11px] text-slate-500 block">LGA of Residence</span>
+                                    <span id="slip-lgaOfResidence" class="font-semibold text-slate-900"></span>
+                                </div>
+                                <div>
+                                    <span class="text-[11px] text-slate-500 block">Ward</span>
+                                    <span id="slip-ward" class="font-semibold text-slate-900"></span>
+                                </div>
+                                <div class="col-span-2">
+                                    <span class="text-[11px] text-slate-500 block">Nearest Landmark</span>
+                                    <span id="slip-nearestLandmark" class="font-semibold text-slate-900"></span>
+                                </div>
+                                <div>
+                                    <span class="text-[11px] text-slate-500 block">Hosting Institution (RAC)</span>
+                                    <span id="slip-hostingInstitution" class="font-semibold text-slate-900"></span>
+                                </div>
+                                <div class="col-span-2 sm:col-span-3 grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                                    <div>
+                                        <span class="text-[11px] text-slate-500 block">Address of Residence</span>
+                                        <span id="slip-addressOfResidence" class="font-semibold text-slate-900"></span>
+                                    </div>
+                                    <div>
+                                        <span class="text-[11px] text-slate-500 block">Permanent Home Address</span>
+                                        <span id="slip-permanentAddress" class="font-semibold text-slate-900"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Group D: Qualifications & Bank -->
+                        <div>
+                            <h3 class="text-xs font-bold uppercase tracking-wider text-civic-800 bg-slate-100 px-3 py-1.5 rounded-md mb-3">D. Qualification, Identification &amp; Bank Details</h3>
+                            <div class="grid grid-cols-2 sm:grid-cols-3 gap-y-3 gap-x-4 px-2">
+                                <div>
+                                    <span class="text-[11px] text-slate-500 block">Highest Qualification</span>
+                                    <span id="slip-qualification" class="font-semibold text-slate-900"></span>
+                                </div>
+                                <div>
+                                    <span class="text-[11px] text-slate-500 block">Form of Identification</span>
+                                    <span id="slip-idForm" class="font-semibold text-slate-900"></span>
+                                </div>
+                                <div>
+                                    <span class="text-[11px] text-slate-500 block">Bank Name</span>
+                                    <span id="slip-bankName" class="font-semibold text-slate-900"></span>
+                                </div>
+                                <div>
+                                    <span class="text-[11px] text-slate-500 block">Account Number</span>
+                                    <span id="slip-accountNumber" class="font-mono font-bold text-slate-900"></span>
+                                </div>
+                                <div class="col-span-2">
+                                    <span class="text-[11px] text-slate-500 block">Account Name</span>
+                                    <span id="slip-accountName" class="font-semibold text-slate-900"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Group E: Referee & Metadata -->
+                        <div>
+                            <h3 class="text-xs font-bold uppercase tracking-wider text-civic-800 bg-slate-100 px-3 py-1.5 rounded-md mb-3">E. Referee &amp; Registration Metadata</h3>
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-y-3 gap-x-4 px-2">
+                                <div>
+                                    <span class="text-[11px] text-slate-500 block">Referee Name</span>
+                                    <span id="slip-refereeName" class="font-semibold text-slate-900"></span>
+                                </div>
+                                <div>
+                                    <span class="text-[11px] text-slate-500 block">Referee Mobile Phone</span>
+                                    <span id="slip-refereePhone" class="font-semibold text-slate-900"></span>
+                                </div>
+                                <div>
+                                    <span class="text-[11px] text-slate-500 block">Referee Email Address</span>
+                                    <span id="slip-refereeEmail" class="font-semibold text-slate-900 break-all"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Slip Footer -->
+                    <div class="mt-6 pt-4 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-500">
+                        <div>
+                            <span>Registration Source: <strong id="slip-regSource" class="text-slate-700">From Web</strong></span>
+                            <span class="mx-2">|</span>
+                            <span>Registration Date: <strong id="slip-regDate" class="font-mono text-slate-700"></strong></span>
+                        </div>
+                        <div class="text-[11px] italic text-slate-400">
+                            Present this slip during physical screening &amp; verification.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // 1. Nigerian States List
+            const NIGERIAN_STATES = [
+                "ABIA", "ADAMAWA", "AKWA IBOM", "ANAMBRA", "BAUCHI", "BAYELSA", "BENUE", "BORNO",
+                "CROSS RIVER", "DELTA", "EBONYI", "EDO", "EKITI", "ENUGU", "FCT - ABUJA", "GOMBE",
+                "IMO", "JIGAWA", "KADUNA", "KANO", "KATSINA", "KEBBI", "KOGI", "KWARA", "LAGOS",
+                "NASARAWA", "NIGER", "OGUN", "ONDO", "OSUN", "OYO", "PLATEAU", "RIVERS", "SOKOTO",
+                "TARABA", "YOBE", "ZAMFARA"
+            ];
+
+            // Populate all state dropdowns
+            document.querySelectorAll('.state-select').forEach(select => {
+                NIGERIAN_STATES.forEach(state => {
+                    const opt = document.createElement('option');
+                    opt.value = state;
+                    opt.textContent = state;
+                    select.appendChild(opt);
+                });
+            });
+
+            // 2. Toast Notification Helper (No alert() used)
+            function showToast(message, type = 'info') {
+                const container = document.getElementById('toast-container');
+                const toast = document.createElement('div');
+                
+                const styles = {
+                    success: 'bg-civic-800 text-white border-civic-600',
+                    error: 'bg-rose-700 text-white border-rose-500',
+                    info: 'bg-slate-800 text-white border-slate-600'
+                };
+                const icons = {
+                    success: 'fa-circle-check text-emerald-300',
+                    error: 'fa-circle-exclamation text-rose-200',
+                    info: 'fa-circle-info text-sky-300'
+                };
+
+                toast.className = `pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg border text-xs sm:text-sm font-medium transform transition-all duration-300 translate-y-0 opacity-100 ${styles[type] || styles.info}`;
+                toast.innerHTML = `
+                    <i class="fa-solid ${icons[type] || icons.info} text-base shrink-0"></i>
+                    <span class="flex-1">${message}</span>
+                `;
+                container.appendChild(toast);
+
+                setTimeout(() => {
+                    toast.classList.add('opacity-0', '-translate-y-2');
+                    setTimeout(() => toast.remove(), 300);
+                }, 3800);
+            }
+
+            // 3. Auto-fill Registration Date & Generate Applicant ID
+            function updateTimestamp() {
+                const now = new Date();
+                const formatted = `${now.getMonth() + 1}/${now.getDate()}/${now.getFullYear()} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+                document.getElementById('regDate').value = formatted;
+            }
+
+            function generateApplicantNo() {
+                const stateVal = document.getElementById('stateOfDeployment').value || 'ABI';
+                const prefix = stateVal.substring(0, 3).toUpperCase();
+                const randomDigits = Math.floor(10000000000 + Math.random() * 90000000000);
+                document.getElementById('applicantNo').value = `${prefix}_${randomDigits}`;
+            }
+
+            updateTimestamp();
+            generateApplicantNo();
+
+            document.getElementById('btn-gen-id').addEventListener('click', () => {
+                generateApplicantNo();
+                showToast('New Applicant Number generated.', 'info');
+            });
+
+            // 4. Passport Photograph JPEG Upload & Validation
+            let passportDataUrl = null;
+            const passportInput = document.getElementById('passportInput');
+            const passportPreview = document.getElementById('passport-preview');
+            const passportPlaceholder = document.getElementById('passport-placeholder');
+            const passportOverlay = document.getElementById('passport-overlay');
+            const passportFileInfo = document.getElementById('passport-file-info');
+            const passportError = document.getElementById('passport-error');
+            const uploadBtnText = document.getElementById('upload-btn-text');
+
+            function setPassportImage(dataUrl, fileName) {
+                passportDataUrl = dataUrl;
+                passportPreview.src = dataUrl;
+                passportPreview.classList.remove('hidden');
+                passportPlaceholder.classList.add('hidden');
+                passportOverlay.classList.remove('hidden');
+                passportOverlay.classList.add('flex');
+                passportFileInfo.textContent = fileName;
+                uploadBtnText.textContent = 'Change Passport JPEG';
+                passportError.classList.add('hidden');
+            }
+
+            function clearPassportImage() {
+                passportDataUrl = null;
+                passportInput.value = '';
+                passportPreview.src = '';
+                passportPreview.classList.add('hidden');
+                passportPlaceholder.classList.remove('hidden');
+                passportOverlay.classList.add('hidden');
+                passportOverlay.classList.remove('flex');
+                passportFileInfo.textContent = 'No file selected';
+                uploadBtnText.textContent = 'Select Passport JPEG';
+            }
+
+            // Generate a clean SVG-to-JPEG data URL for Sample Data mode
+            function createSamplePassportJpeg() {
+                const canvas = document.createElement('canvas');
+                canvas.width = 300;
+                canvas.height = 360;
+                const ctx = canvas.getContext('2d');
+
+                // Studio light-blue/grey civic background
+                ctx.fillStyle = '#e2e8f0';
+                ctx.fillRect(0, 0, 300, 360);
+
+                // Shoulders / Attire
+                ctx.fillStyle = '#14532d';
+                ctx.beginPath();
+                ctx.arc(150, 365, 115, Math.PI, 0);
+                ctx.fill();
+
+                // White collar
+                ctx.fillStyle = '#ffffff';
+                ctx.beginPath();
+                ctx.moveTo(115, 255);
+                ctx.lineTo(150, 295);
+                ctx.lineTo(185, 255);
+                ctx.closePath();
+                ctx.fill();
+
+                // Neck
+                ctx.fillStyle = '#8d5524';
+                ctx.fillRect(128, 210, 44, 50);
+
+                // Head
+                ctx.fillStyle = '#9c6231';
+                ctx.beginPath();
+                ctx.ellipse(150, 155, 56, 70, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Hair
+                ctx.fillStyle = '#1e293b';
+                ctx.beginPath();
+                ctx.arc(150, 130, 58, Math.PI * 1.05, Math.PI * 1.95);
+                ctx.fill();
+
+                // Subtle watermark tag
+                ctx.fillStyle = 'rgba(15, 23, 42, 0.55)';
+                ctx.fillRect(0, 332, 300, 28);
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 12px Inter, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('SAMPLE PASSPORT (JPEG)', 150, 350);
+
+                return canvas.toDataURL('image/jpeg', 0.92);
+            }
+
+            document.getElementById('btn-upload-passport').addEventListener('click', () => passportInput.click());
+            document.getElementById('btn-change-photo').addEventListener('click', () => passportInput.click());
+            document.getElementById('btn-remove-photo').addEventListener('click', () => {
+                clearPassportImage();
+                showToast('Passport photograph removed.', 'info');
+            });
+
+            passportInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                // Validate JPEG/JPG format strictly
+                const isJpegMime = file.type === 'image/jpeg' || file.type === 'image/jpg';
+                const isJpegExt = /\.(jpe?g)$/i.test(file.name);
+
+                if (!isJpegMime && !isJpegExt) {
+                    passportError.textContent = 'Invalid file format! Only JPEG/JPG images are allowed.';
+                    passportError.classList.remove('hidden');
+                    passportInput.value = '';
+                    showToast('Please upload a valid JPEG or JPG passport photo.', 'error');
+                    return;
+                }
+
+                // Validate file size (max 2MB)
+                const maxSize = 2 * 1024 * 1024;
+                if (file.size > maxSize) {
+                    passportError.textContent = 'File too large! Maximum allowed size is 2MB.';
+                    passportError.classList.remove('hidden');
+                    passportInput.value = '';
+                    showToast('Passport photo exceeds the 2MB limit.', 'error');
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const sizeKB = Math.round(file.size / 1024);
+                    setPassportImage(event.target.result, `${file.name} (${sizeKB} KB)`);
+                    showToast('Passport JPEG uploaded successfully.', 'success');
+                };
+                reader.readAsDataURL(file);
+            });
+
+            // 5. Load Sample Data & Clear Form Functionality (Matching PO template.pdf)
+            const sampleData = {
+                applicantNo: 'ABI_95517169634',
+                surname: 'ORIEKE',
+                firstName: 'JOSEPH',
+                otherNames: 'KALU',
+                callupNo: 'SS/2557',
+                gender: 'Male',
+                maritalStatus: 'Single',
+                email: 'josephkaluorieke@gmail.com',
+                mobilePhone: '08036826930',
+                preferredPhone: '08036826930',
+                workplace: 'NYSC',
+                workplaceOther: 'NYSC',
+                position: 'Presiding Officer (PO)',
+                designation: 'NYSC',
+                stateOfDeployment: 'ABIA',
+                preferredElectionState: 'OSUN',
+                stateOfResidence: 'ABIA',
+                lgaOfResidence: 'UMUAHIA SOUTH',
+                ward: "UBAKALA 'A'",
+                nearestLandmark: 'IPUPE I-OGBO CENTRAL SCHOOL',
+                hostingInstitution: 'NONE',
+                addressOfResidence: 'Umuobinola Ipupe Ubakala Umuahia South',
+                permanentAddress: 'Otodo Layout Asaga Ohafia Abia State',
+                qualification: 'National Diploma (HND, ND)',
+                idForm: 'National ID Card',
+                bankName: 'Zenith Bank',
+                accountNumber: '1006525162',
+                accountName: 'ORIEKE JOSEPH KALU',
+                refereeName: 'CHIKE ONWUBIKO',
+                refereePhone: '08061365320',
+                refereeEmail: 'onwubikodaniel@gmail.com'
+            };
+
+            document.getElementById('btn-load-sample').addEventListener('click', () => {
+                Object.entries(sampleData).forEach(([key, val]) => {
+                    const el = document.getElementById(key);
+                    if (el) el.value = val;
+                });
+                document.getElementById('attestation').checked = true;
+                setPassportImage(createSamplePassportJpeg(), 'sample_passport.jpg (48 KB)');
+                clearAllErrors();
+                showToast('Sample Presiding Officer (PO) record loaded.', 'success');
+            });
+
+            document.getElementById('btn-clear-form').addEventListener('click', () => {
+                document.getElementById('registration-form').reset();
+                document.getElementById('hostingInstitution').value = 'NONE';
+                document.getElementById('regSource').value = 'From Web';
+                updateTimestamp();
+                generateApplicantNo();
+                clearPassportImage();
+                clearAllErrors();
+                showToast('Form cleared and ready for a new applicant.', 'info');
+            });
+
+            // 6. Share Registration Link (Clipboard Copy with iFrame Fallback)
+            function copyTextToClipboard(text, successMsg) {
+                const tempInput = document.createElement('textarea');
+                tempInput.value = text;
+                tempInput.style.position = 'fixed';
+                tempInput.style.opacity = '0';
+                document.body.appendChild(tempInput);
+                tempInput.select();
+                try {
+                    document.execCommand('copy');
+                    showToast(successMsg, 'success');
+                } catch (err) {
+                    showToast('Unable to copy automatically. Please copy the URL from your browser.', 'error');
+                }
+                document.body.removeChild(tempInput);
+            }
+
+            document.getElementById('btn-share-link').addEventListener('click', () => {
+                const shareUrl = window.location.href;
+                copyTextToClipboard(shareUrl, 'Registration portal link copied to clipboard!');
+            });
+
+            // 7. Form Validation & Submission
+            function clearAllErrors() {
+                document.querySelectorAll('.error-msg').forEach(el => {
+                    el.textContent = '';
+                    el.classList.add('hidden');
+                });
+                document.querySelectorAll('input, select, textarea').forEach(el => {
+                    el.classList.remove('border-rose-500', 'ring-2', 'ring-rose-500/20');
+                });
+                passportError.classList.add('hidden');
+                document.getElementById('attestation-error').classList.add('hidden');
+            }
+
+            function setFieldError(inputEl, message) {
+                inputEl.classList.add('border-rose-500', 'ring-2', 'ring-rose-500/20');
+                const parent = inputEl.closest('div');
+                const errEl = parent ? parent.parentElement.querySelector('.error-msg') || parent.querySelector('.error-msg') : null;
+                if (errEl) {
+                    errEl.textContent = message;
+                    errEl.classList.remove('hidden');
+                }
+            }
+
+            // Restrict account number to digits only
+            document.getElementById('accountNumber').addEventListener('input', (e) => {
+                e.target.value = e.target.value.replace(/\D/g, '').slice(0, 10);
+            });
+
+            document.getElementById('registration-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                clearAllErrors();
+                updateTimestamp();
+
+                let isValid = true;
+                let firstInvalidEl = null;
+
+                // Validate Passport JPEG
+                if (!passportDataUrl) {
+                    isValid = false;
+                    passportError.textContent = 'Passport photograph (JPEG) is required.';
+                    passportError.classList.remove('hidden');
+                    firstInvalidEl = document.getElementById('passport-dropzone');
+                }
+
+                // Validate all required fields
+                const requiredFields = document.querySelectorAll('#registration-form [required]');
+                requiredFields.forEach(field => {
+                    if (field.type === 'checkbox') return;
+                    const val = field.value.trim();
+                    if (!val) {
+                        isValid = false;
+                        setFieldError(field, 'This field is required.');
+                        if (!firstInvalidEl) firstInvalidEl = field;
+                    } else if (field.type === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)) {
+                        isValid = false;
+                        setFieldError(field, 'Please enter a valid email address.');
+                        if (!firstInvalidEl) firstInvalidEl = field;
+                    } else if (field.id === 'accountNumber' && !/^\d{10}$/.test(val)) {
+                        isValid = false;
+                        setFieldError(field, 'Account number must be exactly 10 digits.');
+                        if (!firstInvalidEl) firstInvalidEl = field;
+                    }
+                });
+
+                // Validate Attestation
+                const attestation = document.getElementById('attestation');
+                if (!attestation.checked) {
+                    isValid = false;
+                    const attErr = document.getElementById('attestation-error');
+                    attErr.textContent = 'You must certify the accuracy of your information before submitting.';
+                    attErr.classList.remove('hidden');
+                    if (!firstInvalidEl) firstInvalidEl = attestation;
+                }
+
+                if (!isValid) {
+                    showToast('Please correct the highlighted fields before submitting.', 'error');
+                    if (firstInvalidEl) {
+                        firstInvalidEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                    return;
+                }
+
+                // Populate Acknowledgement Slip Modal
+                populateAcknowledgementSlip();
+                document.getElementById('slip-modal').classList.remove('hidden');
+                showToast('Registration complete! Acknowledgement slip generated.', 'success');
+            });
+
+            function populateAcknowledgementSlip() {
+                const getVal = (id) => {
+                    const el = document.getElementById(id);
+                    return el && el.value.trim() ? el.value.trim() : 'N/A';
+                };
+
+                document.getElementById('slip-passport-img').src = passportDataUrl;
+                document.getElementById('slip-applicant-no-badge').textContent = getVal('applicantNo');
+
+                const fieldsToMap = [
+                    'applicantNo', 'position', 'callupNo',
+                    'surname', 'firstName', 'otherNames', 'gender', 'maritalStatus',
+                    'email', 'mobilePhone', 'preferredPhone',
+                    'workplace', 'workplaceOther', 'designation', 'stateOfDeployment', 'preferredElectionState',
+                    'stateOfResidence', 'lgaOfResidence', 'ward', 'nearestLandmark', 'hostingInstitution',
+                    'addressOfResidence', 'permanentAddress',
+                    'qualification', 'idForm', 'bankName', 'accountNumber', 'accountName',
+                    'refereeName', 'refereePhone', 'refereeEmail',
+                    'regSource', 'regDate'
+                ];
+
+                fieldsToMap.forEach(id => {
+                    const target = document.getElementById(`slip-${id}`);
+                    if (target) {
+                        const raw = getVal(id);
+                        // Keep emails lowercase, format others cleanly
+                        target.textContent = (id === 'email' || id === 'refereeEmail' || id === 'regSource' || id === 'regDate')
+                            ? raw
+                            : raw.toUpperCase();
+                    }
+                });
+            }
+
+            // 8. Modal Controls (Print, Copy Summary, Close)
+            document.getElementById('btn-print-slip').addEventListener('click', () => {
+                window.print();
+            });
+
+            document.getElementById('btn-close-modal').addEventListener('click', () => {
+                document.getElementById('slip-modal').classList.add('hidden');
+            });
+
+            document.getElementById('btn-copy-summary').addEventListener('click', () => {
+                const summary = [
+                    `ELECTION AD-HOC STAFF REGISTRATION SLIP`,
+                    `Applicant No: ${document.getElementById('applicantNo').value}`,
+                    `Name: ${document.getElementById('surname').value} ${document.getElementById('firstName').value} ${document.getElementById('otherNames').value}`.trim(),
+                    `Position: ${document.getElementById('position').value}`,
+                    `Call-up/ID: ${document.getElementById('callupNo').value}`,
+                    `Phone: ${document.getElementById('mobilePhone').value} | Email: ${document.getElementById('email').value}`,
+                    `Deployment State: ${document.getElementById('stateOfDeployment').value} | Preferred State: ${document.getElementById('preferredElectionState').value}`,
+                    `Residence: ${document.getElementById('lgaOfResidence').value}, ${document.getElementById('stateOfResidence').value} (Ward: ${document.getElementById('ward').value})`,
+                    `Bank: ${document.getElementById('bankName').value} - ${document.getElementById('accountNumber').value} (${document.getElementById('accountName').value})`,
+                    `Submitted: ${document.getElementById('regDate').value}`
+                ].join('\n');
+
+                copyTextToClipboard(summary, 'Registration summary copied to clipboard!');
+            });
+        });
+    </script>
+</body>
+</html>
